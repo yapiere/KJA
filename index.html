@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>I Love You</title>
+  <link href="style.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com" rel="preconnect"/>
+  <link crossorigin="true" href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+
+  <style>
+    /* Floating hearts */
+    .heart {
+      position: absolute;
+      pointer-events: none;
+      animation: floatUp 6s linear forwards;
+      will-change: transform, opacity;
+    }
+
+    @keyframes floatUp {
+      0%   { transform: translateY(0) translateX(0) scale(1); opacity: 1; }
+      25%  { transform: translateY(-30vh) translateX(-15px) scale(1.1); opacity: 0.9; }
+      50%  { transform: translateY(-60vh) translateX(10px) scale(1.25); opacity: 0.7; }
+      100% { transform: translateY(-120vh) translateX(25px) scale(1.5); opacity: 0; }
+    }
+
+    .landing { 
+      position: relative; 
+      overflow: hidden; 
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #FF69B4, #E91429);
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .hero-content h1 + h2 + #seeMore { 
+      margin-top: 20px; 
+    }
+
+    .card-image {
+      width: 100%;
+      max-width: 300px;
+      margin-top: 10px;
+      border-radius: 12px;
+      display: block;
+    }
+
+    /* Success message styling */
+    .form-success {
+      color: green;
+      font-weight: bold;
+      margin-top: 15px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Password Overlay -->
+  <div id="password-overlay" aria-modal="true" role="dialog">
+    <div id="password-modal">
+      <h2>Stop! This is for Kyah Jane only.</h2>
+      <input type="password" id="password-input" placeholder="Hint: Onwards" autocomplete="current-password">
+      <button id="password-submit">Enter</button>
+      <p id="error-message" style="color: #d32f2f; display: none; margin-top: 10px;">Incorrect password. Please try again.</p>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <main id="main-content" style="display: none;">
+    <!-- Hero Landing -->
+    <section class="landing">
+      <div class="hero-content">
+        <h1>I Love You Honeybear,</h1>
+        <h2>More than you could ever know.</h2>
+        <button id="seeMore">What I've been working on ↓</button>
+      </div>
+    </section>
+
+   <!-- Cards Section -->
+   <section id="cards">
+      <!-- Word of the Day -->
+      <div class="card">
+        <h2>Word of the Day</h2>
+        <p id="wotd-word"></p>
+        <p id="wotd-definition"></p>
+      </div>
+
+      <!-- Write Me a Letter -->
+      <div class="card">
+        <h2>Write Me a Letter</h2>
+        <form id="letter-form" action="https://formspree.io/f/mzzapggk" method="POST">
+          <textarea name="message" id="message" placeholder="'Say anything...'" required></textarea><br/>
+          <button type="submit">Send</button>
+          <p id="form-success" class="form-success">Thanks, your letter was sent! ❤</p>
+        </form>
+        <img src="pooh-letter.jpeg" alt="Winnie the Pooh writing a letter" class="card-image">
+      </div>
+
+      <!-- Kyah's Jams -->
+      <div class="card">
+        <h2>Kyah's Jams</h2>
+        <p><a href="https://open.spotify.com/playlist/5x8yPLKoXNf0WHWKU4bpw0?si=qHNgKE8WRnCDhPtKo0bYGQ" target="_blank" rel="noopener noreferrer">Click here to listen</a></p>
+        <img src="pooh-snoopy.jpeg" alt="Winnie the Pooh and Snoopy listening to music" class="card-image">
+      </div>
+   </section>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const overlay = document.getElementById('password-overlay');
+    const main = document.getElementById('main-content');
+    const input = document.getElementById('password-input');
+    const submitBtn = document.getElementById('password-submit');
+    const errorEl = document.getElementById('error-message');
+    const seeMore = document.getElementById('seeMore');
+
+    const PASSWORD = '.'; // Change this to your real password
+
+    // --- Password Logic ---
+    function unlock() {
+      overlay.style.display = 'none';
+      main.style.display = 'block';
+      startHearts();
+      loadWordOfTheDay(); // fetch WOTD after unlocking
+    }
+
+    function checkPassword() {
+      const val = (input.value || '').trim().toLowerCase();
+      if (val === PASSWORD) {
+        errorEl.style.display = 'none';
+        unlock();
+      } else {
+        errorEl.style.display = 'block';
+        input.select();
+      }
+    }
+
+    submitBtn.addEventListener('click', checkPassword);
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        checkPassword();
+      }
+    });
+
+    if (seeMore) {
+      seeMore.addEventListener('click', () => {
+        const cards = document.getElementById('cards');
+        if (cards) cards.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+
+    // --- Floating Hearts ---
+    let heartTimer = null;
+    function createHeart() {
+      const landing = document.querySelector('.landing');
+      if (!landing) return;
+
+      const heart = document.createElement('div');
+      heart.className = 'heart';
+      heart.textContent = '❤';
+      heart.style.left = Math.random() * 100 + 'vw';
+      heart.style.fontSize = (Math.random() * 20 + 15) + 'px';
+      heart.style.animationDuration = (Math.random() * 3 + 4) + 's';
+      heart.style.color = Math.random() > 0.5 ? '#FF69B4' : '#FFEF00';
+
+      landing.appendChild(heart);
+      setTimeout(() => heart.remove(), 7000);
+    }
+
+    function startHearts() {
+      if (heartTimer) return;
+      heartTimer = setInterval(createHeart, 800);
+    }
+
+    // --- Formspree Submission ---
+    const form = document.getElementById('letter-form');
+    const successMsg = document.getElementById('form-success');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      try {
+        const response = await fetch(form.action, {
+          method: form.method,
+          body: formData,
+          headers: { 'Accept': 'application/json' }
+        });
+        if (response.ok) {
+          form.reset();
+          successMsg.style.display = 'block';
+        } else {
+          alert('Oops! Something went wrong, please try again.');
+        }
+      } catch (error) {
+        alert('Network error, please try again.');
+      }
+    });
+
+    // --- Word of the Day ---
+    async function loadWordOfTheDay() {
+      try {
+        const response = await fetch('words.json'); // Ensure words.json is in same folder
+        const words = await response.json();
+
+        const today = new Date();
+        const start = new Date(today.getFullYear(), 0, 0);
+        const diff = today - start;
+        const oneDay = 1000 * 60 * 60 * 24;
+        const dayOfYear = Math.floor(diff / oneDay);
+
+        const index = dayOfYear % words.length;
+        const wotd = words[index];
+
+        const wordEl = document.getElementById('wotd-word');
+        const defEl = document.getElementById('wotd-definition');
+
+        if(wordEl && defEl) {
+          wordEl.textContent = `${wotd.word} /${wotd.pronunciation}/`;
+          defEl.textContent = `${wotd.part_of_speech} — ${wotd.definition} (${wotd.origin})`;
+        }
+
+      } catch (err) {
+        console.error('Failed to load Word of the Day:', err);
+      }
+    }
+
+  });
+  </script>
+
+</body>
+</html>
